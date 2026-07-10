@@ -1,362 +1,122 @@
-# Amanda Frontend
+# Amanda — Frontend
 
-The Amanda Frontend is a clean, modern web interface for the relationship support chatbot. Built with vanilla HTML, CSS, and JavaScript (no frameworks), it provides a ChatGPT-like experience for users to interact with the AI.
+> A calm, ethically framed AI conversational interface for mental health support.
 
-## Features
+**[▶ View the live demo](https://marianor03.github.io/amanda-frontend-demo/)**
 
-- **Authentication**: User signup and login with session management
-- **Real-time Chat**: WebSocket-based streaming for instant AI responses
-- **Chat Management**: Create and switch between multiple conversations
-- **Responsive Design**: Optimized for desktop, works on mobile
-- **Modern UI**: Clean, professional interface inspired by popular AI chat apps
+---
 
-## Architecture
+## About this repository
 
-```
-frontend/
-├── index.html           # Landing page (auth redirect)
-├── auth/               # Authentication pages
-│   ├── login.html     # Login form
-│   └── signup.html    # Registration form
-├── dashboard/         # Main chat interface
-│   └── index.html    # Chat dashboard
-└── static/           # Static assets
-    ├── css/         # Stylesheets
-    │   ├── common.css      # Shared styles, variables, utilities
-    │   ├── auth.css        # Authentication page styles
-    │   └── dashboard.css   # Dashboard/chat styles
-    ├── js/          # JavaScript modules
-    │   ├── api.js         # REST API client
-    │   ├── websocket.js   # WebSocket client
-    │   └── dashboard.js   # Dashboard logic
-    └── assets/      # Images, icons, etc.
-        └── .gitkeep
-```
+Amanda was my final-year dissertation project at the University of Roehampton, built by a **team of four**. **I was responsible for the frontend and UX/UI**: the public site, the full authentication flow, the real-time chat dashboard with voice input, the animated AI orb, the design system, and the React admin dashboard — plus the production deployment infrastructure. The AI backend was developed independently by other team members.
 
-## Setup Instructions
+This repository contains **my frontend work, adapted into a static demo** so it can be explored in a browser without running a server.
 
-### Prerequisites
+The complete team project lives at [Mohamad-04/AmandaChatbot](https://github.com/Mohamad-04/AmandaChatbot).
 
-- A web server to serve the HTML files (Python's http.server, VS Code Live Server, etc.)
-- Amanda Backend running on `http://localhost:5000`
-- AI Backend running on `localhost:50051`
+---
 
-### Running the Frontend
+## ⚠️ This is a static demo
 
-**Option 1: Python HTTP Server**
+There is no backend running behind this site. To make the interface explorable, the API client, the WebSocket layer and the socket.io client have been replaced with mocks.
+
+**What that means when you click around:**
+
+- **Any email and password will log you in.** Nothing is validated or stored.
+- **Amanda's replies are pre-written** and cycle through a short list. There is no AI, no language model, no conversation memory.
+- **Voice mode renders the orb and simulates a reply**, but no audio is recorded, transmitted, or synthesised.
+- Everything else — the layout, the animations, the streaming typewriter effect, the theming, the navigation — is the real implementation.
+
+The mocked files are `static/js/api.js`, `static/js/websocket.js` and `static/js/mock-socketio.js`. Every other file is the code as it was written for the live application.
+
+---
+
+## The problem
+
+Mental health services face rising demand, long waiting lists, and barriers of cost and stigma. Digital tools have grown to fill that gap, but many feel clinical, cold, or cognitively overwhelming — precisely when a person is least able to cope with friction.
+
+Existing conversational tools tend to either over-structure the interaction (scripted, repetitive) or bury it inside feature-rich interfaces that create pressure rather than relieve it. There was also a recurring ethical gap: systems that let users believe they were receiving therapy.
+
+Amanda was built to test a different position: **that thoughtful interface design can make an AI tool feel genuinely supportive, while being honest about what it is.**
+
+---
+
+## Design principles
+
+Three principles shaped every decision in the interface.
+
+**Calm visual design.** A warm terracotta and cream palette instead of the clinical white and blue common to health applications. Lexend Deca for legibility. Glass morphism on the chat input so it recedes rather than demands attention. A soft three-body loading animation instead of a spinner — it signals the system is working without creating urgency.
+
+**Low cognitive load.** A linear, predictable navigation flow. Public content, authentication and the conversation kept in clearly separated zones. Responses stream in progressively via a typewriter effect, which both reduces perceived waiting time and makes the exchange feel closer to a real conversation.
+
+**Ethical transparency.** Amanda never presents itself as a therapist. This is stated on the landing page, the About page, the Terms, and in-app. A crisis detection banner surfaces safeguarding resources when signs of serious distress appear in a conversation.
+
+---
+
+## The animated orb
+
+During voice mode, a Three.js orb serves as the visual anchor — something to focus on while speaking. It uses noise-based vertex displacement on a sphere geometry with a slow colour shift, giving it a breathing quality rather than a mechanical rotation. It appears only in voice mode and recedes when the user returns to text, so it never competes with the conversation.
+
+---
+
+## What was actually built
+
+| | |
+|---|---|
+| **Public site** | Landing, About, Contact, Terms — mobile-responsive with hamburger navigation |
+| **Authentication** | Registration with real-time password strength validation, email verification, login, password recovery and reset |
+| **Chat dashboard** | Real-time streaming responses, voice input, chat history sidebar with rename/delete, swipe-to-open on mobile, profile and settings panels, personalisation onboarding |
+| **Admin dashboard** | A separate React + TypeScript SPA for monitoring users, conversations, study sessions and risk alerts — not included in this static build |
+| **Theming** | Full light and dark modes across both the user-facing and administrative interfaces |
+| **Deployment** | Multi-stage Docker build, Gunicorn with Gevent workers, PostgreSQL |
+
+---
+
+## Tech stack
+
+**This frontend:** HTML, CSS, vanilla JavaScript (ES modules), Three.js.
+
+The absence of a framework was deliberate. The user-facing interface is essentially one page with well-contained state; React would have added a build step, a bundler config and a dependency tree for no functional gain, and Tailwind would have fought the design system already expressed in CSS custom properties.
+
+**The wider application:** Flask (blueprint architecture), Flask-SocketIO for real-time streaming, PostgreSQL, gRPC to a separate AI service, Docker, Gunicorn + Gevent.
+
+**The admin dashboard**, where the complexity genuinely justified it: React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Recharts.
+
+---
+
+## Evaluation
+
+The interface was evaluated through a user testing study with **79 participants**, assessed across four areas on a five-point scale.
+
+| Area | Score |
+|---|---|
+| Trust and ethical framing | **4.14** |
+| Overall rating | **4.09** |
+| First impressions and visual design | 3.99 |
+| Usability and navigation | 3.89 |
+
+The strongest single result was the question asking whether it was clear that Amanda is an AI tool and not a therapist or a human — **4.23 out of 5**. That was the point of the exercise.
+
+Open-ended responses returned "calm", "clean", "warm", "friendly" and "relaxing" repeatedly, which was the design goal stated at the outset.
+
+**The weakest area was usability**, and specifically the sign-up flow. Every participant was frustrated by a login prompt appearing immediately after registration, and most struggled with a disclaimer that gave no indication it needed scrolling. A meaningful finding I did not anticipate: several participants whose first language was not English asked for a Spanish option. Accessibility, in a tool meant to lower barriers, had been considered too narrowly.
+
+---
+
+## Running it locally
 
 ```bash
-cd services/frontend
+git clone https://github.com/marianor03/amanda-frontend-demo.git
+cd amanda-frontend-demo
 python -m http.server 8000
 ```
 
-Then open `http://localhost:8000` in your browser.
+Then open `http://localhost:8000/`.
 
-**Option 2: VS Code Live Server**
+---
 
-1. Install the "Live Server" extension in VS Code
-2. Right-click on `index.html`
-3. Select "Open with Live Server"
+## Credits
 
-**Option 3: Node.js http-server**
+Amanda was built by a four-person team as a final-year project at the University of Roehampton. The AI backend, gRPC voice service and conversational logic were developed by my teammates. The frontend, UX/UI and deployment infrastructure documented here are my contribution.
 
-```bash
-npm install -g http-server
-cd services/frontend
-http-server -p 8000
-```
-
-### Configuration
-
-The frontend is configured to connect to:
-- **Backend API**: `http://localhost:5000`
-- **WebSocket**: `http://localhost:5000`
-
-To change these URLs, edit:
-- `static/js/api.js`: Change `API_BASE_URL`
-- `static/js/websocket.js`: Change `SOCKET_URL`
-
-## Page-by-Page Guide
-
-### 1. Landing Page (`index.html`)
-
-- Checks authentication status via `/api/auth/check`
-- Redirects to dashboard if authenticated
-- Redirects to login if not authenticated
-- Shows loading spinner during check
-
-### 2. Login Page (`auth/login.html`)
-
-**Features:**
-- Email and password input fields
-- Form validation
-- Error message display
-- Link to signup page
-- Auto-redirect to dashboard on success
-
-**Validation:**
-- Email and password required
-- Basic email format check
-
-### 3. Signup Page (`auth/signup.html`)
-
-**Features:**
-- Email, password, and confirm password fields
-- Comprehensive validation
-- Error message display
-- Link to login page
-- Auto-redirect to dashboard on success
-
-**Validation:**
-- All fields required
-- Email format validation
-- Password minimum 8 characters
-- Passwords must match
-
-### 4. Dashboard (`dashboard/index.html`)
-
-**Features:**
-- Three-column layout:
-  - **Left Sidebar**: Chat list, new chat button
-  - **Main Area**: Messages display, input area
-  - **Profile Modal**: User info, logout button
-
-**Functionality:**
-- Create new chats
-- Switch between chats
-- Send messages
-- Real-time streaming responses
-- Auto-scroll to bottom
-- Message timestamps
-- Profile management
-
-## Styling Guide
-
-### CSS Variables
-
-The design system uses CSS variables for easy customization. Edit `static/css/common.css`:
-
-```css
-:root {
-    /* Colors */
-    --primary-color: #0066cc;          /* Main brand color */
-    --secondary-color: #f0f2f5;        /* Light backgrounds */
-    --text-primary: #1a1a1a;           /* Main text */
-    --text-secondary: #666;            /* Secondary text */
-    --border-color: #e0e0e0;           /* Borders */
-    
-    /* Chat colors */
-    --user-message-bg: #0066cc;        /* User message bubble */
-    --assistant-message-bg: #f0f2f5;   /* AI message bubble */
-    
-    /* Spacing, borders, shadows... */
-}
-```
-
-### Customization Examples
-
-**Change primary color:**
-```css
---primary-color: #8b5cf6;  /* Purple */
-```
-
-**Change chat bubble colors:**
-```css
---user-message-bg: #10b981;        /* Green */
---assistant-message-bg: #f3f4f6;   /* Light gray */
-```
-
-**Modify spacing:**
-```css
---spacing-md: 20px;  /* Increase default spacing */
-```
-
-## JavaScript Modules
-
-### `api.js` - REST API Client
-
-```javascript
-import { api } from './static/js/api.js';
-
-// Authentication
-await api.signup('user@example.com', 'password');
-await api.login('user@example.com', 'password');
-await api.logout();
-const { authenticated } = await api.checkAuth();
-
-// User
-const profile = await api.getProfile();
-
-// Chats
-const { chats } = await api.listChats();
-const { chat_id } = await api.createChat();
-const { messages } = await api.getChatMessages(chatId);
-```
-
-### `websocket.js` - WebSocket Client
-
-```javascript
-import { chatSocket } from './static/js/websocket.js';
-
-// Connect
-await chatSocket.connect();
-
-// Send message
-chatSocket.sendMessage(chatId, message);
-
-// Listen for events
-chatSocket.onToken((data) => {
-    console.log('Token:', data.text);
-});
-
-chatSocket.onComplete((data) => {
-    console.log('Complete:', data.full_text);
-});
-
-chatSocket.onError((data) => {
-    console.error('Error:', data.message);
-});
-
-// Disconnect
-chatSocket.disconnect();
-```
-
-### `dashboard.js` - Main Application
-
-The dashboard module orchestrates the entire chat interface:
-- Authentication checking
-- Chat list management
-- Message rendering
-- WebSocket communication
-- UI state management
-
-## Browser Compatibility
-
-- **Modern Browsers**: Chrome, Firefox, Safari, Edge (latest versions)
-- **Required Features**:
-  - ES6+ JavaScript (modules, async/await, classes)
-  - Fetch API
-  - CSS Grid & Flexbox
-  - WebSocket/Socket.IO support
-
-## Development Tips
-
-### Debugging
-
-Open browser DevTools (F12) to:
-- **Console**: View logs and errors
-- **Network**: Monitor API requests and WebSocket messages
-- **Application**: Check session cookies
-
-### Common Issues
-
-**CORS Errors**
-- Ensure backend CORS is configured for `http://localhost:8000`
-- Check `CORS_ORIGINS` in backend `.env`
-
-**WebSocket Not Connecting**
-- Verify backend is running
-- Check browser console for errors
-- Ensure session is valid (logged in)
-
-**Messages Not Sending**
-- Check if chat is selected
-- Verify WebSocket connection
-- Check backend logs for errors
-
-## Extending the Frontend
-
-### Adding a New Page
-
-1. Create HTML file (e.g., `settings.html`)
-2. Link common CSS: `<link rel="stylesheet" href="/static/css/common.css">`
-3. Create page-specific CSS if needed
-4. Add JavaScript module for functionality
-5. Update navigation links
-
-### Adding New API Endpoints
-
-1. Add method to `api.js`:
-   ```javascript
-   async myNewEndpoint() {
-       return this.request('/api/my/endpoint', {
-           method: 'POST',
-           body: JSON.stringify({ data })
-       });
-   }
-   ```
-
-2. Use in your page:
-   ```javascript
-   import { api } from './static/js/api.js';
-   const result = await api.myNewEndpoint();
-   ```
-
-### Customizing Message Display
-
-Edit `dashboard.js` > `renderMessage()` to:
-- Add markdown rendering
-- Support code blocks
-- Display images/files
-- Add message actions (copy, delete, etc.)
-
-### Adding Voice Input
-
-```javascript
-// Add to dashboard.js
-const recognition = new webkitSpeechRecognition();
-recognition.onresult = (event) => {
-    const text = event.results[0][0].transcript;
-    messageInput.value = text;
-};
-```
-
-## Future Enhancements
-
-Students can extend the frontend with:
-
-- **Rich Text**: Markdown rendering for AI responses
-- **Code Highlighting**: Syntax highlighting for code blocks
-- **File Upload**: Share images/documents in chat
-- **Voice Input**: Speech-to-text for messages
-- **Voice Output**: Text-to-speech for AI responses
-- **Dark Mode**: Theme switcher
-- **Accessibility**: ARIA labels, keyboard navigation
-- **Offline Mode**: Service worker for offline access
-- **PWA**: Install as mobile/desktop app
-- **Chat Export**: Download chat history
-- **Search**: Search through messages
-- **Settings Page**: Customize preferences
-- **Notifications**: Desktop notifications for new messages
-
-## Security Considerations
-
-- **XSS Prevention**: All user input is escaped before rendering
-- **CSRF Protection**: Session cookies with SameSite flag
-- **HTTPS**: Use HTTPS in production
-- **Session Management**: Automatic logout on session expiry
-- **Input Validation**: Client-side validation for all forms
-
-## Deployment
-
-For production deployment:
-
-1. **Build Process**: Consider bundling JS modules
-2. **Minification**: Minify CSS and JS files
-3. **CDN**: Serve static assets from CDN
-4. **HTTPS**: Use SSL/TLS certificates
-5. **Environment Config**: Use environment-specific API URLs
-6. **Caching**: Set appropriate cache headers
-7. **Compression**: Enable gzip/brotli compression
-
-## License
-
-Educational project - feel free to modify and extend!
-
-## Support
-
-For issues or questions:
-1. Check browser console for errors
-2. Verify backend is running
-3. Check network requests in DevTools
-4. Review backend logs
+Built by **Mariano Regalado** — [LinkedIn](https://www.linkedin.com/in/mariano-antonio-regalado-iglesias-843685248/) · [GitHub](https://github.com/marianor03)
