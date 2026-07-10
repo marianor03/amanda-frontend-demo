@@ -8,11 +8,9 @@
 
 ## About this repository
 
-Amanda was my final-year dissertation project at the University of Roehampton, built by a **team of four**. **I was responsible for the frontend and UX/UI**: the public site, the full authentication flow, the real-time chat dashboard with voice input, the animated AI orb, the design system, and the React admin dashboard — plus the production deployment infrastructure. The AI backend was developed independently by other team members.
+Amanda was my final-year dissertation project at the University of Roehampton, built by a **team of four**. **I was responsible for the frontend and UX/UI**: the public site, the full authentication flow, the real-time chat dashboard with voice input, the animated AI orb, the design system, and the React admin dashboard, plus the production deployment infrastructure. The AI backend was developed independently by other team members.
 
 This repository contains **my frontend work, adapted into a static demo** so it can be explored in a browser without running a server.
-
-The complete team project lives at [Mohamad-04/AmandaChatbot](https://github.com/Mohamad-04/AmandaChatbot).
 
 ---
 
@@ -33,7 +31,7 @@ The mocked files are `static/js/api.js`, `static/js/websocket.js` and `static/js
 
 ## The problem
 
-Mental health services face rising demand, long waiting lists, and barriers of cost and stigma. Digital tools have grown to fill that gap, but many feel clinical, cold, or cognitively overwhelming — precisely when a person is least able to cope with friction.
+Mental health services face rising demand, long waiting lists, and barriers of cost and stigma. Digital tools have grown to fill that gap, but many feel clinical, cold, or cognitively overwhelming, precisely when a person is least able to cope with friction.
 
 Existing conversational tools tend to either over-structure the interaction (scripted, repetitive) or bury it inside feature-rich interfaces that create pressure rather than relieve it. There was also a recurring ethical gap: systems that let users believe they were receiving therapy.
 
