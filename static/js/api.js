@@ -81,19 +81,19 @@ export const __demoStore = {
 
 // --- Mock client -----------------------------------------------------------
 class MockAPI {
-    async signup(email) {
+async signup(email) {
         await delay();
-        return { success: true, data: { message: 'Verification email sent', email }, status: 200 };
+        return { success: true, data: { success: true, message: 'Verification email sent', email }, status: 200 };
     }
 
     async login(email) {
         await delay();
-        return { success: true, data: { user: { ...DEMO_USER, email } }, status: 200 };
+        return { success: true, data: { success: true, user: { ...DEMO_USER, email } }, status: 200 };
     }
 
     async logout() {
         await delay(120);
-        return { success: true, data: { message: 'Logged out' }, status: 200 };
+        return { success: true, data: { success: true, message: 'Logged out' }, status: 200 };
     }
 
     async checkAuth() {
@@ -146,6 +146,44 @@ class MockAPI {
         demoChats = demoChats.filter(c => c.id !== Number(chatId));
         delete demoMessages[chatId];
         return { success: true, data: { message: 'Chat deleted' }, status: 200 };
+    }
+
+    async forgotPassword(email) {
+        await delay();
+        return { success: true, data: { success: true, message: 'Reset link sent to ' + email }, status: 200 };
+    }
+
+    async resetPassword() {
+        await delay();
+        return { success: true, data: { success: true, message: 'Password updated. You can now log in.' }, status: 200 };
+    }
+
+    async verifyEmail() {
+        await delay();
+        return { success: true, data: { success: true, message: 'Email verified! You can now log in.' }, status: 200 };
+    }
+
+    async resendVerification() {
+        await delay();
+        return { success: true, data: { success: true, message: 'Verification email sent.' }, status: 200 };
+    }
+    
+    /**
+     * Generic endpoint handler — the auth pages call api.request() directly
+     * instead of a named method, so we route by endpoint here.
+     */
+    async request(endpoint) {
+        await delay();
+
+        const responses = {
+            '/api/auth/forgot-password':     'If that email exists, a reset link has been sent.',
+            '/api/auth/reset-password':      'Password updated. You can now log in.',
+            '/api/auth/verify-email':        'Email verified! You can now log in.',
+            '/api/auth/resend-verification': 'Verification email sent. Check your inbox.'
+        };
+
+        const message = responses[endpoint] || 'OK';
+        return { success: true, data: { success: true, message }, status: 200 };
     }
 }
 
