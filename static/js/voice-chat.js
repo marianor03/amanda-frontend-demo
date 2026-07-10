@@ -138,7 +138,8 @@ class VoiceChatController {
     setupEventListeners() {
         // Back button
         this.elements.backBtn.addEventListener('click', () => {
-            window.location.href = '/dashboard/';
+            // Path is relative to the loading page (voice-chat/index.html), not to this script file
+            window.location.href = '../dashboard/';
         });
 
         // Voice toggle button

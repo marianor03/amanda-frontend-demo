@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/common.css">
-    <link rel="stylesheet" href="/static/css/auth.css">
+    <link rel="stylesheet" href="../static/css/common.css">
+    <link rel="stylesheet" href="../static/css/auth.css">
 </head>
 <body>
     <div class="auth-container">
@@ -26,7 +26,7 @@
             <div id="error-message" class="error-message" style="display:none;"></div>
 
             <div id="action-area" style="display:none; margin-top: 20px;">
-                <a href="/auth/login.html" class="btn btn-primary" style="display:block; text-align:center; text-decoration:none;">
+                <a href="./login.html" class="btn btn-primary" style="display:block; text-align:center; text-decoration:none;">
                     Go to Login
                 </a>
             </div>
@@ -34,7 +34,7 @@
     </div>
 
     <script type="module">
-        import { api } from '/static/js/api.js';
+        import { api } from '../static/js/api.js';
 
         const loadingEl = document.getElementById('loading-message');
         const successEl = document.getElementById('success-message');

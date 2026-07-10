@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/common.css">
-    <link rel="stylesheet" href="/static/css/auth.css">
+    <link rel="stylesheet" href="../static/css/common.css">
+    <link rel="stylesheet" href="../static/css/auth.css">
 </head>
 <body>
     <div class="auth-container">
@@ -76,13 +76,13 @@
             </form>
 
             <div class="auth-footer">
-                <p>Already have an account? <a href="/auth/login.html">Login</a></p>
+                <p>Already have an account? <a href="./login.html">Login</a></p>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { api } from '/static/js/api.js';
+        import { api } from '../static/js/api.js';
 
         const form = document.getElementById('signup-form');
         const emailInput = document.getElementById('email');

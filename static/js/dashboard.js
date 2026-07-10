@@ -83,7 +83,8 @@ class Dashboard {
             console.log('Dashboard initialized');
         } catch (error) {
             console.error('Dashboard initialization error:', error);
-            window.location.href = '/landing.html';
+            // Path is relative to the loading page (dashboard/index.html), not to this script file
+            window.location.href = '../landing.html';
         }
     }
 
@@ -538,10 +539,12 @@ class Dashboard {
             chatSocket.disconnect();
             if (this.textSocket) this.textSocket.disconnect();
             await api.logout();
-            window.location.href = '/landing.html';
+            // Path is relative to the loading page (dashboard/index.html), not to this script file
+            window.location.href = '../landing.html';
         } catch (error) {
             console.error('Logout error:', error);
-            window.location.href = '/landing.html';
+            // Path is relative to the loading page (dashboard/index.html), not to this script file
+            window.location.href = '../landing.html';
         }
     }
 

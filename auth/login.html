@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/common.css">
-    <link rel="stylesheet" href="/static/css/auth.css">
+    <link rel="stylesheet" href="../static/css/common.css">
+    <link rel="stylesheet" href="../static/css/auth.css">
 </head>
 <body>
     <div class="auth-container">
@@ -56,14 +56,14 @@
             </form>
 
             <div class="auth-footer">
-                <p><a href="/auth/forgot-password.html">Forgot your password?</a></p>
-                <p>Don't have an account? <a href="/auth/signup.html">Sign up</a></p>
+                <p><a href="./forgot-password.html">Forgot your password?</a></p>
+                <p>Don't have an account? <a href="./signup.html">Sign up</a></p>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { api } from '/static/js/api.js';
+        import { api } from '../static/js/api.js';
 
         const form = document.getElementById('login-form');
         const emailInput = document.getElementById('email');
@@ -109,7 +109,8 @@
                 const result = await api.login(email, password);
 
                 if (result.success && result.data.success) {
-                    window.location.href = '/dashboard/';
+                    // Path is relative to this page's URL (auth/login.html), not to this script file
+                    window.location.href = '../dashboard/';
                 } else if (result.status === 403) {
                     // Unverified account
                     errorMessage.textContent = result.data.message || 'Please verify your email before logging in.';
@@ -147,6 +148,6 @@
 
         emailInput.focus();
     </script>
-  <script src="/static/js/page-loader.js"></script>
+  <script src="../static/js/page-loader.js"></script>
 </body>
 </html>
