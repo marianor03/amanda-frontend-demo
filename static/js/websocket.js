@@ -1,208 +1,81 @@
 /**
- * WebSocket client
+ * MOCK VOICE CLIENT — static demo only.
  *
- * NOTE:
- * - Text chat in this project is handled via REST (/api/...) from api.js/dashboard.js.
- * - Voice notes should NOT use Socket.IO against the Flask dev server.
- * - Voice notes should connect directly to the AI voice server (aiohttp) on :8080
- *   Endpoint: ws://localhost:8080/voice-stream?user_id=...&chat_id=...&session_id=...
+ * Drop-in replacement for the real `websocket.js`. Exports the same `chatSocket`
+ * singleton so dashboard.js imports resolve unchanged.
  *
- * This file keeps the same exported name `chatSocket` to avoid breaking dashboard.js,
- * but internally it only implements VOICE messaging via native WebSocket.
+ * The real client opens a WebSocket to the gRPC voice service. Here, voice mode
+ * still renders the animated orb, but nothing is recorded or transmitted: after
+ * a short pause it returns a canned transcription and reply.
  */
 
-const DEFAULT_VOICE_WS_URL = "ws://localhost:8080/voice-stream";
+const noop = () => {};
 
-function makeSessionId() {
-  // Modern browsers
-  if (crypto && crypto.randomUUID) return crypto.randomUUID();
-  // Fallback
-  return "sess_" + Math.random().toString(16).slice(2) + "_" + Date.now();
-}
-
-function buildVoiceWsUrl({ userId, chatId, sessionId }) {
-  const url = new URL(DEFAULT_VOICE_WS_URL);
-  url.searchParams.set("user_id", String(userId));
-  url.searchParams.set("chat_id", String(chatId));
-  url.searchParams.set("session_id", String(sessionId));
-  return url.toString();
-}
-
-class ChatWebSocket {
-  constructor() {
-    // Voice WS state
-    this.voiceWs = null;
-    this.voiceConnected = false;
-
-    // Event callbacks (dashboard can subscribe)
-    this._onVoiceTranscribed = null; // (data) => void
-    this._onVoiceProcessing = null;  // (data) => void
-    this._onVoiceResponse = null;    // (data) => void
-    this._onError = null;            // (data) => void
-  }
-
-  /**
-   * Optional: connect voice WS early.
-   * You can also just call sendVoiceMessage(), which will connect automatically.
-   */
-  connectVoice({ userId, chatId, sessionId = makeSessionId() }) {
-    return new Promise((resolve, reject) => {
-      try {
-        const wsUrl = buildVoiceWsUrl({ userId, chatId, sessionId });
-        const ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => {
-          this.voiceWs = ws;
-          this.voiceConnected = true;
-          resolve({ sessionId });
-        };
-
-        ws.onerror = (err) => {
-          this.voiceConnected = false;
-          reject(err);
-        };
-
-        ws.onclose = () => {
-          this.voiceConnected = false;
-          this.voiceWs = null;
-        };
-
-        ws.onmessage = (evt) => {
-          this._handleVoiceMessage(evt.data);
-        };
-      } catch (e) {
-        reject(e);
-      }
-    });
-  }
-
-  disconnect() {
-    // Only voice WS exists in this implementation
-    if (this.voiceWs) {
-      this.voiceWs.close();
-      this.voiceWs = null;
-      this.voiceConnected = false;
-    }
-  }
-
-  /**
-   * Send a TEXT chat message
-   * Not supported here because your text chat uses REST (/api/chat/...)
-   */
-  sendMessage(chatId, message) {
-    throw new Error(
-      "sendMessage is not implemented here. Use REST endpoints in api.js for text chat."
-    );
-  }
-
-  /**
-   * Send a VOICE NOTE to the voice server.
-   *
-   * @param {number|string} chatId
-   * @param {string} audioBase64 - base64 audio bytes (NO data: prefix)
-   * @param {string} format - "webm" | "wav" | etc.
-   * @param {object} opts - { userId, sessionId }
-   */
-  async sendVoiceMessage(chatId, audioBase64, format, opts = {}) {
-    const userId = opts.userId ?? 1; // ✅ default for local demo if not available
-    const sessionId = opts.sessionId ?? makeSessionId();
-
-    // Ensure connected
-    if (!this.voiceWs || !this.voiceConnected) {
-      await this.connectVoice({ userId, chatId, sessionId });
+class MockVoiceSocket {
+    constructor() {
+        this._onTranscribed = noop;
+        this._onProcessing = noop;
+        this._onResponse = noop;
+        this._onError = noop;
+        this.voiceConnected = false;
     }
 
-    // Your aiohttp handler expects:
-    // { type: "audio_chunk", data: "<base64>", format: "webm", is_final: true }
-    const payload = {
-      type: "audio_chunk",
-      data: audioBase64,
-      format: format || "webm",
-      is_final: true,
-    };
-
-    this.voiceWs.send(JSON.stringify(payload));
-    return { sessionId };
-  }
-
-  /**
-   * Optional control messages (interrupt / set speed)
-   */
-  sendVoiceControl(command, params = {}) {
-    if (!this.voiceWs || !this.voiceConnected) return;
-    this.voiceWs.send(
-      JSON.stringify({
-        type: "control",
-        command,
-        params,
-      })
-    );
-  }
-
-  /**
-   * Incoming messages from voice_server.py:
-   * - {type:"status", status:"transcribing|thinking|speaking|..."}
-   * - {type:"transcript", role:"user|assistant", text:"...", is_final:true|false}
-   * - {type:"audio_chunk", data:"<base64>", format:"mp3", is_final:false}
-   * - {type:"error", error:"..."}
-   */
-  _handleVoiceMessage(raw) {
-    try {
-      const msg = JSON.parse(raw);
-
-      if (msg.type === "status") {
-        if (this._onVoiceProcessing) this._onVoiceProcessing(msg);
-        return;
-      }
-
-      if (msg.type === "transcript") {
-        if (this._onVoiceTranscribed) this._onVoiceTranscribed(msg);
-        return;
-      }
-
-      if (msg.type === "audio_chunk") {
-        if (this._onVoiceResponse) this._onVoiceResponse(msg);
-        return;
-      }
-
-      if (msg.type === "error") {
-        if (this._onError) this._onError(msg);
-        return;
-      }
-    } catch (e) {
-      // If message is not JSON, ignore but log for debugging
-      console.warn("Voice WS message parse failed:", e, raw);
+    async connectVoice() {
+        this.voiceConnected = true;
+        console.info('[amanda demo] Mock voice connection — no audio is captured or sent.');
+        return { sessionId: 'demo-session' };
     }
-  }
 
-  // ---- Event subscriptions (keep old names so dashboard.js likely already matches) ----
-  onVoiceTranscribed(callback) {
-    this._onVoiceTranscribed = callback;
-  }
+    disconnect() {
+        this.voiceConnected = false;
+    }
 
-  onVoiceProcessing(callback) {
-    this._onVoiceProcessing = callback;
-  }
+    sendMessage() {
+        throw new Error('sendMessage is not implemented. Text chat uses the mock socket.io client.');
+    }
 
-  onVoiceResponse(callback) {
-    this._onVoiceResponse = callback;
-  }
+    async sendVoiceMessage(chatId) {
+        if (!this.voiceConnected) await this.connectVoice();
 
-  onError(callback) {
-    this._onError = callback;
-  }
+        // Simulate: transcription → processing → response
+        setTimeout(() => {
+            this._onTranscribed({ text: "I've been feeling a bit overwhelmed lately.", chat_id: chatId });
+        }, 600);
 
-  removeAllListeners() {
-    this._onVoiceTranscribed = null;
-    this._onVoiceProcessing = null;
-    this._onVoiceResponse = null;
-    this._onError = null;
-  }
+        setTimeout(() => {
+            this._onProcessing({ status: 'thinking' });
+        }, 900);
 
-  isConnected() {
-    return this.voiceConnected;
-  }
+        setTimeout(() => {
+            this._onResponse({
+                text: "That's worth paying attention to. Overwhelm usually means something has been asking too much of you for a while.\n\nWhat's been taking up the most space?",
+                chat_id: chatId,
+                audio: null // no synthesised audio in the static demo
+            });
+        }, 2200);
+
+        return { sessionId: 'demo-session' };
+    }
+
+    sendVoiceControl(command) {
+        console.log(`[mock-voice] ignored control "${command}"`);
+    }
+
+    onVoiceTranscribed(cb) { this._onTranscribed = cb || noop; }
+    onVoiceProcessing(cb)  { this._onProcessing  = cb || noop; }
+    onVoiceResponse(cb)    { this._onResponse    = cb || noop; }
+    onError(cb)            { this._onError       = cb || noop; }
+
+    removeAllListeners() {
+        this._onTranscribed = noop;
+        this._onProcessing = noop;
+        this._onResponse = noop;
+        this._onError = noop;
+    }
+
+    isConnected() {
+        return this.voiceConnected;
+    }
 }
 
-// Export singleton instance (same name as before)
-export const chatSocket = new ChatWebSocket();
+export const chatSocket = new MockVoiceSocket();

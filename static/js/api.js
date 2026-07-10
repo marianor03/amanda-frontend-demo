@@ -1,168 +1,152 @@
 /**
- * API client wrapper for making HTTP requests to the backend
- * Provides methods for authentication, user, and chat endpoints
+ * MOCK API CLIENT — static demo only.
+ *
+ * Drop-in replacement for the real `api.js`. Exports the same `api` singleton
+ * with identical method signatures and response shapes, so dashboard.js runs
+ * unchanged. No network calls are made.
+ *
+ * The real client talks to the Flask backend (see the full project repo).
  */
 
-// In production Flask serves the frontend directly (same origin, no port needed).
-// In local dev it runs on port 5000.
-const API_BASE_URL = window.location.port === '5000' || window.location.hostname === 'localhost'
-    ? `${window.location.protocol}//${window.location.hostname}:5000`
-    : window.location.origin;
+// --- Fake latency so the UI's loading states are actually visible -----------
+const delay = (ms = 220) => new Promise(res => setTimeout(res, ms));
 
-class API {
-    constructor(baseURL = API_BASE_URL) {
-        this.baseURL = baseURL;
+// --- Demo data -------------------------------------------------------------
+const DEMO_USER = {
+    id: 1,
+    email: 'demo@amanda.app',
+    created_at: '2026-03-01T10:00:00Z'
+};
+
+const now = () => new Date().toISOString();
+
+let demoChats = [
+    {
+        id: 1,
+        title: 'Problems at home',
+        created_at: '2026-05-04T18:12:00Z',
+        last_message_time: '2026-05-04T18:14:00Z'
+    },
+    {
+        id: 2,
+        title: 'Feeling overwhelmed at work',
+        created_at: '2026-05-02T09:30:00Z',
+        last_message_time: '2026-05-02T09:41:00Z'
     }
+];
 
-    /**
-     * Generic request method
-     * @param {string} endpoint - API endpoint (e.g., '/api/auth/login')
-     * @param {object} options - Fetch options (method, body, headers, etc.)
-     * @returns {Promise<{success: boolean, data: any, error?: string}>}
-     */
-    async request(endpoint, options = {}) {
-        const url = `${this.baseURL}${endpoint}`;
-        
-        const config = {
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
-            credentials: 'include', // Important for session cookies
-        };
-
-        try {
-            const response = await fetch(url, config);
-            const data = await response.json();
-            
-            return {
-                success: response.ok,
-                data: data,
-                status: response.status
-            };
-        } catch (error) {
-            console.error('API request error:', error);
-            return {
-                success: false,
-                error: error.message,
-                data: null
-            };
+const demoMessages = {
+    1: [
+        {
+            id: 101,
+            role: 'user',
+            content: 'Amanda, I\'m having problems at home.',
+            timestamp: '2026-05-04T18:12:30Z'
+        },
+        {
+            id: 102,
+            role: 'assistant',
+            content:
+                'That sounds really hard to carry on your own, and I\'m glad you reached out instead of staying alone with it.\n\nWhen you say "problems at home," what\'s been feeling most difficult for you lately?',
+            timestamp: '2026-05-04T18:12:38Z'
         }
+    ],
+    2: [
+        {
+            id: 201,
+            role: 'user',
+            content: 'I can\'t switch off after work anymore.',
+            timestamp: '2026-05-02T09:30:20Z'
+        },
+        {
+            id: 202,
+            role: 'assistant',
+            content:
+                'It makes sense that your mind keeps running — it hasn\'t been given a chance to land.\n\nWhat does the evening usually look like once you finish?',
+            timestamp: '2026-05-02T09:30:29Z'
+        }
+    ]
+};
+
+let nextChatId = 3;
+let nextMessageId = 1000;
+
+// Exposed so the mock socket can append the user's message and read history.
+export const __demoStore = {
+    get chats() { return demoChats; },
+    messages: demoMessages,
+    nextMessageId: () => ++nextMessageId,
+    user: DEMO_USER
+};
+
+// --- Mock client -----------------------------------------------------------
+class MockAPI {
+    async signup(email) {
+        await delay();
+        return { success: true, data: { message: 'Verification email sent', email }, status: 200 };
     }
 
-    // ===== AUTHENTICATION ENDPOINTS =====
-
-    /**
-     * Sign up a new user
-     * @param {string} email - User email
-     * @param {string} password - User password
-     */
-    async signup(email, password) {
-        return this.request('/api/auth/signup', {
-            method: 'POST',
-            body: JSON.stringify({ email, password })
-        });
+    async login(email) {
+        await delay();
+        return { success: true, data: { user: { ...DEMO_USER, email } }, status: 200 };
     }
 
-    /**
-     * Log in an existing user
-     * @param {string} email - User email
-     * @param {string} password - User password
-     */
-    async login(email, password) {
-        return this.request('/api/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password })
-        });
-    }
-
-    /**
-     * Log out the current user
-     */
     async logout() {
-        return this.request('/api/auth/logout', {
-            method: 'POST'
-        });
+        await delay(120);
+        return { success: true, data: { message: 'Logged out' }, status: 200 };
     }
 
-    /**
-     * Check if user is authenticated
-     * @returns {Promise<{authenticated: boolean, user?: object}>}
-     */
     async checkAuth() {
-        return this.request('/api/auth/check', {
-            method: 'GET'
-        });
+        await delay(120);
+        // Always "logged in" so the demo dashboard is reachable directly.
+        return { success: true, data: { authenticated: true, user: DEMO_USER }, status: 200 };
     }
 
-    // ===== USER ENDPOINTS =====
-
-    /**
-     * Get current user's profile
-     * @returns {Promise<{id: number, email: string, created_at: string}>}
-     */
     async getProfile() {
-        return this.request('/api/user/profile', {
-            method: 'GET'
-        });
+        await delay(150);
+        return { success: true, data: { ...DEMO_USER }, status: 200 };
     }
 
-    // ===== CHAT ENDPOINTS =====
-
-    /**
-     * Get list of all chats for current user
-     * @returns {Promise<{chats: Array}>}
-     */
     async listChats() {
-        return this.request('/api/chat/list', {
-            method: 'GET'
-        });
+        await delay();
+        return { success: true, data: { chats: [...demoChats] }, status: 200 };
     }
 
-    /**
-     * Create a new chat
-     * @returns {Promise<{chat_id: number, title: string, created_at: string}>}
-     */
     async createChat() {
-        return this.request('/api/chat/create', {
-            method: 'POST'
-        });
+        await delay();
+        const chat = {
+            chat_id: nextChatId,
+            title: 'New Chat',
+            created_at: now()
+        };
+        demoChats = [
+            { id: chat.chat_id, title: chat.title, created_at: chat.created_at, last_message_time: chat.created_at },
+            ...demoChats
+        ];
+        demoMessages[chat.chat_id] = [];
+        nextChatId += 1;
+        return { success: true, data: chat, status: 201 };
     }
 
-    /**
-     * Get all messages in a chat
-     * @param {number} chatId - Chat ID
-     * @returns {Promise<{messages: Array}>}
-     */
     async getChatMessages(chatId) {
-        return this.request(`/api/chat/${chatId}/messages`, {
-            method: 'GET'
-        });
+        await delay(180);
+        const messages = demoMessages[chatId] ? [...demoMessages[chatId]] : [];
+        return { success: true, data: { messages }, status: 200 };
     }
 
-    /**
-     * Rename a chat
-     * @param {number} chatId - Chat ID
-     * @param {string} title - New title
-     */
     async renameChat(chatId, title) {
-        return this.request(`/api/chat/${chatId}/rename`, {
-            method: 'PUT',
-            body: JSON.stringify({ title })
-        });
+        await delay(150);
+        const chat = demoChats.find(c => c.id === Number(chatId));
+        if (chat) chat.title = title;
+        return { success: true, data: { title }, status: 200 };
     }
 
-    /**
-     * Delete a chat and all its messages
-     * @param {number} chatId - Chat ID
-     */
     async deleteChat(chatId) {
-        return this.request(`/api/chat/${chatId}`, {
-            method: 'DELETE'
-        });
+        await delay(150);
+        demoChats = demoChats.filter(c => c.id !== Number(chatId));
+        delete demoMessages[chatId];
+        return { success: true, data: { message: 'Chat deleted' }, status: 200 };
     }
 }
 
-// Export singleton instance
-export const api = new API();
+export const api = new MockAPI();
