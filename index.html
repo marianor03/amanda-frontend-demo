@@ -53,29 +53,10 @@
     </div>
 
     <script type="module">
-        import { api } from './static/js/api.js';
-
-        async function checkAuth() {
-            try {
-                const result = await api.checkAuth();
-                
-                if (result.success && result.data.authenticated) {
-                    // User is authenticated, redirect to dashboard
-                    // Path is relative to this page's URL (index.html at repo root), not to this script file
-                    window.location.href = './dashboard/';
-                } else {
-                    // Path is relative to this page's URL (index.html at repo root), not to this script file
-                    window.location.href = './landing.html';
-                }
-            } catch (error) {
-                console.error('Auth check failed:', error);
-                // Path is relative to this page's URL (index.html at repo root), not to this script file
-                window.location.href = './landing.html';
-            }
-        }
-
-        // Check authentication on page load
-        checkAuth();
+        // Path is relative to this page's URL (index.html at repo root), not to this script file
+        setTimeout(() => {
+            window.location.href = './landing.html';
+        }, 1200);
     </script>
 </body>
 </html>
