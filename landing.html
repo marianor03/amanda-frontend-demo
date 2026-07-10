@@ -80,17 +80,6 @@
 
     </div>
 
-  <script type="module">
-    import { api } from './static/js/api.js';
-    // If already logged in, skip landing and go straight to chat
-    try {
-      const result = await api.checkAuth();
-      if (result.success && result.data.authenticated) {
-        // Path is relative to this page's URL (landing.html at repo root), not to this script file
-        window.location.href = './dashboard/';
-      }
-    } catch (_) {}
-  </script>
     <script src="./static/js/page-loader.js"></script>
     <script src="./js/nav.js"></script>
 </body>
